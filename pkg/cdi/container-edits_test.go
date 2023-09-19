@@ -248,6 +248,23 @@ func TestValidateContainerEdits(t *testing.T) {
 			},
 			invalid: true,
 		},
+		{
+			name: "valid rdt config",
+			edits: &cdi.ContainerEdits{
+				IntelRdt: &cdi.IntelRdt{
+					ClosID: "foo.bar",
+				},
+			},
+		},
+		{
+			name: "invalid rdt config, invalid closID",
+			edits: &cdi.ContainerEdits{
+				IntelRdt: &cdi.IntelRdt{
+					ClosID: "foo/bar",
+				},
+			},
+			invalid: true,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			edits := ContainerEdits{tc.edits}
@@ -466,6 +483,30 @@ func TestApplyContainerEdits(t *testing.T) {
 						{
 							Path: "/usr/local/bin/poststop-vendor-hook",
 						},
+					},
+				},
+			},
+		},
+		{
+			name: "empty spec, rdt",
+			spec: &oci.Spec{},
+			edits: &cdi.ContainerEdits{
+				IntelRdt: &cdi.IntelRdt{
+					ClosID:        "clos-1",
+					L3CacheSchema: "L3:0=ff;1=ff",
+					MemBwSchema:   "MB:0=50;1=50",
+					EnableCMT:     true,
+					EnableMBM:     true,
+				},
+			},
+			result: &oci.Spec{
+				Linux: &oci.Linux{
+					IntelRdt: &oci.LinuxIntelRdt{
+						ClosID:        "clos-1",
+						L3CacheSchema: "L3:0=ff;1=ff",
+						MemBwSchema:   "MB:0=50;1=50",
+						EnableCMT:     true,
+						EnableMBM:     true,
 					},
 				},
 			},

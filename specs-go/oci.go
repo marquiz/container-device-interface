@@ -76,6 +76,10 @@ func ApplyEditsToOCISpec(config *spec.Spec, edits *ContainerEdits) error {
 		}
 	}
 
+	if edits.IntelRdt != nil {
+		config.Linux.IntelRdt = edits.IntelRdt.ToOCI()
+	}
+
 	return nil
 }
 
@@ -109,5 +113,16 @@ func (d *DeviceNode) ToOCI() spec.LinuxDevice {
 		FileMode: d.FileMode,
 		UID:      d.UID,
 		GID:      d.GID,
+	}
+}
+
+// ToOCI returns the opencontainers runtime Spec LinuxIntelRdt for this IntelRdt config.
+func (i *IntelRdt) ToOCI() *spec.LinuxIntelRdt {
+	return &spec.LinuxIntelRdt{
+		ClosID:        i.ClosID,
+		L3CacheSchema: i.L3CacheSchema,
+		MemBwSchema:   i.MemBwSchema,
+		EnableCMT:     i.EnableCMT,
+		EnableMBM:     i.EnableMBM,
 	}
 }
