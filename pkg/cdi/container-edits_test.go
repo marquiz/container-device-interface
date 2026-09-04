@@ -146,6 +146,99 @@ func TestValidateContainerEdits(t *testing.T) {
 			},
 		},
 		{
+			name: "valid device cgroup rules",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:        "c",
+						Major:       int64ptr(226),
+						Permissions: "rwm",
+					},
+					{
+						Type:  "b",
+						Major: int64ptr(8),
+						Minor: int64ptr(0),
+					},
+				},
+			},
+		},
+		{
+			name: "invalid device cgroup rule, wildcard major",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:  "c",
+						Minor: int64ptr(3),
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid device cgroup rule, zero major",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:  "c",
+						Major: int64ptr(0),
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid device cgroup rule, negative major",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:  "c",
+						Major: int64ptr(-1),
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			// "a" would grant access to every device, not to all types of the
+			// device given by the major and minor.
+			name: "invalid device cgroup rule, all devices type",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:  "a",
+						Major: int64ptr(226),
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid device cgroup rule, wrong permissions",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:        "c",
+						Major:       int64ptr(226),
+						Permissions: "to land",
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
+			name: "invalid device cgroup rule, NoPermissions",
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:        "c",
+						Major:       int64ptr(226),
+						Permissions: NoPermissions,
+					},
+				},
+			},
+			invalid: true,
+		},
+		{
 			name: "valid mount",
 			edits: &cdi.ContainerEdits{
 				Mounts: []*cdi.Mount{
@@ -359,6 +452,34 @@ func TestValidateContainerEdits(t *testing.T) {
 	}
 }
 
+func TestDeviceCgroupRuleString(t *testing.T) {
+	for _, tc := range []struct {
+		rule *cdi.DeviceCgroupRule
+		want string
+	}{
+		{
+			rule: &cdi.DeviceCgroupRule{Type: "c", Major: int64ptr(1), Minor: int64ptr(3), Permissions: "rw"},
+			want: "c 1:3 rw",
+		},
+		{
+			rule: &cdi.DeviceCgroupRule{Type: "c", Major: int64ptr(226)},
+			want: "c 226:* rwm",
+		},
+		{
+			rule: &cdi.DeviceCgroupRule{Type: "b", Minor: int64ptr(0)},
+			want: "b *:0 rwm",
+		},
+		{
+			rule: &cdi.DeviceCgroupRule{Type: "c"},
+			want: "c *:* rwm",
+		},
+	} {
+		t.Run(tc.want, func(t *testing.T) {
+			require.Equal(t, tc.want, (&DeviceCgroupRule{tc.rule}).String())
+		})
+	}
+}
+
 func TestApplyContainerEdits(t *testing.T) {
 	nullDeviceMajor := int64(1)
 	nullDeviceMinor := int64(3)
@@ -466,6 +587,57 @@ func TestApplyContainerEdits(t *testing.T) {
 								Type:   "c",
 								Major:  &nullDeviceMajor,
 								Minor:  &nullDeviceMinor,
+								Access: "rwm",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "empty spec, device cgroup rules",
+			spec: &oci.Spec{},
+			edits: &cdi.ContainerEdits{
+				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
+					{
+						Type:        "c",
+						Major:       int64ptr(226),
+						Permissions: "rw",
+					},
+					{
+						// An omitted minor is a wildcard, an omitted
+						// permission defaults to "rwm".
+						Type:  "b",
+						Major: int64ptr(8),
+					},
+					{
+						Type:  "c",
+						Major: int64ptr(1),
+						Minor: int64ptr(3),
+					},
+				},
+			},
+			result: &oci.Spec{
+				Linux: &oci.Linux{
+					Resources: &oci.LinuxResources{
+						Devices: []oci.LinuxDeviceCgroup{
+							{
+								Allow:  true,
+								Type:   "c",
+								Major:  int64ptr(226),
+								Access: "rw",
+							},
+							{
+								Allow:  true,
+								Type:   "b",
+								Major:  int64ptr(8),
+								Access: "rwm",
+							},
+							{
+								Allow:  true,
+								Type:   "c",
+								Major:  int64ptr(1),
+								Minor:  int64ptr(3),
 								Access: "rwm",
 							},
 						},
