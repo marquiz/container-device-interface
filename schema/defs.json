@@ -11,6 +11,11 @@
             "minimum": -9223372036854775808,
             "maximum": 9223372036854775807
         },
+        "positiveInt64": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9223372036854775807
+        },
         "ArrayOfStrings": {
             "type": "array",
             "items": {
@@ -67,6 +72,27 @@
             },
             "required": [
                 "path"
+            ]
+        },
+        "DeviceCgroupRule": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "major": {
+                    "$ref": "#/definitions/positiveInt64"
+                },
+                "minor": {
+                    "$ref": "#/definitions/int64"
+                },
+                "permissions": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "type",
+                "major"
             ]
         },
         "Mount": {
@@ -142,6 +168,12 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/DeviceNode"
+                    }
+                },
+                "deviceCgroupRules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DeviceCgroupRule"
                     }
                 },
                 "netDevices": {
