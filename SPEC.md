@@ -153,8 +153,8 @@ The keywords "must", "must not", "required", "shall", "shall not", "should", "sh
                     // Device type ("b" or "c")
                     "type": "<type>",
                     "major": <int64>,
-                    // Minor number, or -1 as a wildcard matching any minor number.
-                    "minor": <int64>,
+                    // Minor number, or "any" (or -1) as a wildcard matching any minor number.
+                    "minor": <int64> | "any",
                     // Cgroups permissions to grant, same candidates as for deviceNodes.permissions.
                     // Omitted or empty default to 'rwm'.
                     "permissions": "<permissions>" (optional)
@@ -261,7 +261,9 @@ The `containerEdits` field has the following definition:
       * b - block device.
       * c - character device.
     * `major` (int64, REQUIRED) major number of the devices the rule applies to. Must be greater than 0.
-    * `minor` (int64, REQUIRED) minor number of the devices the rule applies to. Must be non-negative, or `-1` as a wildcard matching all minor numbers of the given major.
+    * `minor` (int64 or string, REQUIRED) minor number of the devices the rule applies to. Must be non-negative, or one of the following wildcards matching all minor numbers of the given major:
+      * `"any"` - the canonical form of the wildcard.
+      * `-1` - an alternative integer form of the wildcard.
     * `permissions` (string, OPTIONAL) Cgroups permissions to grant, with the same candidates as the `deviceNodes.permissions`. Omitted or empty default to `rwm`.
   * `mounts` (array of objects, OPTIONAL) describes the mounts that should be mounted:
     * `hostPath` (string, REQUIRED) path of the device on the host.

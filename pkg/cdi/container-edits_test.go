@@ -152,18 +152,18 @@ func TestValidateContainerEdits(t *testing.T) {
 					{
 						Type:        "c",
 						Major:       int64ptr(226),
-						Minor:       int64ptr(cdi.DeviceCgroupMinorAny),
+						Minor:       minorptr(cdi.DeviceCgroupMinorAny),
 						Permissions: "rwm",
 					},
 					{
 						Type:  "b",
 						Major: int64ptr(8),
-						Minor: int64ptr(0),
+						Minor: minorptr(0),
 					},
 					{
 						Type:  "c",
 						Major: int64ptr(10),
-						Minor: int64ptr(-1),
+						Minor: minorptr(-1),
 					},
 				},
 			},
@@ -174,7 +174,7 @@ func TestValidateContainerEdits(t *testing.T) {
 				DeviceCgroupRules: []*cdi.DeviceCgroupRule{
 					{
 						Type:  "c",
-						Minor: int64ptr(3),
+						Minor: minorptr(3),
 					},
 				},
 			},
@@ -187,7 +187,7 @@ func TestValidateContainerEdits(t *testing.T) {
 					{
 						Type:  "c",
 						Major: int64ptr(0),
-						Minor: int64ptr(0),
+						Minor: minorptr(0),
 					},
 				},
 			},
@@ -200,7 +200,7 @@ func TestValidateContainerEdits(t *testing.T) {
 					{
 						Type:  "c",
 						Major: int64ptr(-1),
-						Minor: int64ptr(0),
+						Minor: minorptr(0),
 					},
 				},
 			},
@@ -225,7 +225,7 @@ func TestValidateContainerEdits(t *testing.T) {
 					{
 						Type:  "c",
 						Major: int64ptr(226),
-						Minor: int64ptr(-2),
+						Minor: minorptr(-2),
 					},
 				},
 			},
@@ -240,7 +240,7 @@ func TestValidateContainerEdits(t *testing.T) {
 					{
 						Type:  "a",
 						Major: int64ptr(226),
-						Minor: int64ptr(cdi.DeviceCgroupMinorAny),
+						Minor: minorptr(cdi.DeviceCgroupMinorAny),
 					},
 				},
 			},
@@ -253,7 +253,7 @@ func TestValidateContainerEdits(t *testing.T) {
 					{
 						Type:        "c",
 						Major:       int64ptr(226),
-						Minor:       int64ptr(cdi.DeviceCgroupMinorAny),
+						Minor:       minorptr(cdi.DeviceCgroupMinorAny),
 						Permissions: "to land",
 					},
 				},
@@ -267,7 +267,7 @@ func TestValidateContainerEdits(t *testing.T) {
 					{
 						Type:        "c",
 						Major:       int64ptr(226),
-						Minor:       int64ptr(cdi.DeviceCgroupMinorAny),
+						Minor:       minorptr(cdi.DeviceCgroupMinorAny),
 						Permissions: NoPermissions,
 					},
 				},
@@ -494,15 +494,15 @@ func TestDeviceCgroupRuleString(t *testing.T) {
 		want string
 	}{
 		{
-			rule: &cdi.DeviceCgroupRule{Type: "c", Major: int64ptr(1), Minor: int64ptr(3), Permissions: "rw"},
+			rule: &cdi.DeviceCgroupRule{Type: "c", Major: int64ptr(1), Minor: minorptr(3), Permissions: "rw"},
 			want: "c 1:3 rw",
 		},
 		{
-			rule: &cdi.DeviceCgroupRule{Type: "c", Major: int64ptr(226), Minor: int64ptr(cdi.DeviceCgroupMinorAny)},
+			rule: &cdi.DeviceCgroupRule{Type: "c", Major: int64ptr(226), Minor: minorptr(cdi.DeviceCgroupMinorAny)},
 			want: "c 226:* rwm",
 		},
 		{
-			rule: &cdi.DeviceCgroupRule{Type: "b", Minor: int64ptr(0)},
+			rule: &cdi.DeviceCgroupRule{Type: "b", Minor: minorptr(0)},
 			want: "b *:0 rwm",
 		},
 		{
@@ -514,6 +514,10 @@ func TestDeviceCgroupRuleString(t *testing.T) {
 			require.Equal(t, tc.want, (&DeviceCgroupRule{tc.rule}).String())
 		})
 	}
+}
+
+func minorptr(v cdi.DeviceCgroupMinor) *cdi.DeviceCgroupMinor {
+	return &v
 }
 
 func TestApplyContainerEdits(t *testing.T) {
@@ -638,19 +642,19 @@ func TestApplyContainerEdits(t *testing.T) {
 					{
 						Type:        "c",
 						Major:       int64ptr(226),
-						Minor:       int64ptr(cdi.DeviceCgroupMinorAny),
+						Minor:       minorptr(cdi.DeviceCgroupMinorAny),
 						Permissions: "rw",
 					},
 					{
 						// An omitted permission defaults to "rwm".
 						Type:  "b",
 						Major: int64ptr(8),
-						Minor: int64ptr(cdi.DeviceCgroupMinorAny),
+						Minor: minorptr(cdi.DeviceCgroupMinorAny),
 					},
 					{
 						Type:  "c",
 						Major: int64ptr(1),
-						Minor: int64ptr(3),
+						Minor: minorptr(3),
 					},
 				},
 			},

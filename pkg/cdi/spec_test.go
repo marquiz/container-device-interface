@@ -85,11 +85,11 @@ devices:
       deviceCgroupRules:
         - type: "c"
           major: 226
-          minor: -1
+          minor: "any"
           permissions: "rw"
         - type: "b"
           major: 8
-          minor: 0
+          minor: -1
         - type: "c"
           major: 1
           minor: 3
@@ -135,7 +135,7 @@ devices:
       deviceCgroupRules:
         - type: "c"
           major: 226
-          minor: -1
+          minor: "any"
 `,
 			invalid: true,
 		},
@@ -162,6 +162,47 @@ devices:
 			require.NotNil(t, spec)
 		})
 	}
+}
+
+func TestParseSpecDeviceCgroupRuleMinor(t *testing.T) {
+	data := `
+cdiVersion: "1.2.0"
+kind: vendor.com/device
+devices:
+  - name: "dev1"
+    containerEdits:
+      deviceCgroupRules:
+        - type: "c"
+          major: 226
+          minor: "any"
+        - type: "c"
+          major: 226
+          minor: -1
+        - type: "c"
+          major: 226
+          minor: 0
+`
+	raw, err := ParseSpec([]byte(data))
+	require.NoError(t, err)
+
+	rules := raw.Devices[0].ContainerEdits.DeviceCgroupRules
+	require.Len(t, rules, 3)
+	require.Equal(t, cdi.DeviceCgroupMinorAny, *rules[0].Minor)
+	require.Equal(t, cdi.DeviceCgroupMinorAny, *rules[1].Minor)
+	require.Equal(t, cdi.DeviceCgroupMinor(0), *rules[2].Minor)
+
+	out, err := yaml.Marshal(rules)
+	require.NoError(t, err)
+	require.Equal(t, `- type: c
+  major: 226
+  minor: any
+- type: c
+  major: 226
+  minor: any
+- type: c
+  major: 226
+  minor: 0
+`, string(out))
 }
 
 func TestNewSpec(t *testing.T) {

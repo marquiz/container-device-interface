@@ -6,7 +6,8 @@
       "name": "myDevice",
       "containerEdits": {
         "deviceCgroupRules": [
-          {"type": "c", "major": 226, "minor": -1, "permissions": "rw"},
+          {"type": "c", "major": 226, "minor": "any", "permissions": "rw"},
+          {"type": "c", "major": 226, "minor": -1},
           {"type": "b", "major": 8, "minor": 0}
         ]
       }

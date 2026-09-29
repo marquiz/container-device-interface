@@ -17,9 +17,19 @@
             "maximum": 9223372036854775807
         },
         "deviceCgroupMinor": {
-            "type": "integer",
-            "minimum": -1,
-            "maximum": 9223372036854775807
+            "oneOf": [
+                {
+                    "type": "integer",
+                    "minimum": -1,
+                    "maximum": 9223372036854775807
+                },
+                {
+                    "type": "string",
+                    "enum": [
+                        "any"
+                    ]
+                }
+            ]
         },
         "ArrayOfStrings": {
             "type": "array",

@@ -395,7 +395,7 @@ func (r *DeviceCgroupRule) Validate() error {
 		return fmt.Errorf("device cgroup rule %s: minor device number must be specified", r)
 	}
 	if *r.Minor < 0 && *r.Minor != cdi.DeviceCgroupMinorAny {
-		return fmt.Errorf("device cgroup rule %s: minor device number must be non-negative or %d", r, cdi.DeviceCgroupMinorAny)
+		return fmt.Errorf("device cgroup rule %s: minor device number must be non-negative, -1 or %q", r, "any")
 	}
 	if strings.Trim(r.Permissions, "rwm") != "" {
 		return fmt.Errorf("device cgroup rule %s: invalid permissions %q", r, r.Permissions)
@@ -409,7 +409,8 @@ func (r *DeviceCgroupRule) minor() *int64 {
 	if r.Minor == nil || *r.Minor == cdi.DeviceCgroupMinorAny {
 		return nil
 	}
-	return r.Minor
+	minor := int64(*r.Minor)
+	return &minor
 }
 
 // access returns the cgroup permissions granted by this rule.

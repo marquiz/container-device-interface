@@ -49,14 +49,17 @@ type DeviceNode struct {
 
 // DeviceCgroupRule represents a rule to be added to the devices cgroup of the container.
 type DeviceCgroupRule struct { // Added in v1.2.0
-	Type        string `json:"type"                  yaml:"type"`
-	Major       *int64 `json:"major"                 yaml:"major"`
-	Minor       *int64 `json:"minor"                 yaml:"minor"`
-	Permissions string `json:"permissions,omitempty" yaml:"permissions,omitempty"`
+	Type        string             `json:"type"                  yaml:"type"`
+	Major       *int64             `json:"major"                 yaml:"major"`
+	Minor       *DeviceCgroupMinor `json:"minor"                 yaml:"minor"`
+	Permissions string             `json:"permissions,omitempty" yaml:"permissions,omitempty"`
 }
 
-// DeviceCgroupMinorAny is the DeviceCgroupRule Minor wildcard matching any minor device number.
-const DeviceCgroupMinorAny = -1
+// DeviceCgroupMinor is the minor device number of a DeviceCgroupRule.
+type DeviceCgroupMinor int64
+
+// DeviceCgroupMinorAny is the DeviceCgroupMinor wildcard matching any minor device number.
+const DeviceCgroupMinorAny DeviceCgroupMinor = -1
 
 // Mount represents a mount that needs to be added to the OCI spec.
 type Mount struct {
